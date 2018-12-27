@@ -8,7 +8,7 @@ description = "Rust bindings to Linux Control Groups (cgroups)."
 documentation = "https://docs.rs/cgroups-fs/*/cgroups-fs"
 repository = "https://github.com/frol/cgroups-fs"
 readme = "README.md"
-keywords = ["linux", "cgroup", "cgroups", "control groups", "containers"]
+keywords = ["linux", "cgroup", "cgroups", "containers"]
 categories = ["api-bindings", "os::unix-apis", "filesystem"]
 include = ["/src/**/*", "/Cargo.toml", "/LICENSE-MIT", "/LICENSE-APACHE", "/README.md"]
 
