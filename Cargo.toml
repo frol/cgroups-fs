@@ -3,6 +3,17 @@ name = "cgroups-fs"
 version = "1.0.0"
 authors = ["Vlad Frolov <frolvlad@gmail.com>"]
 edition = "2018"
+license = "MIT/Apache-2.0"
+description = "Rust bindings to Linux Control Groups (cgroups)."
+documentation = "https://docs.rs/cgroups-fs/*/cgroups-fs"
+repository = "https://github.com/frol/cgroups-fs"
+readme = "README.md"
+keywords = ["linux", "cgroup", "cgroups", "control groups", "containers"]
+categories = ["api-bindings", "os::unix-apis", "filesystem"]
+include = ["/src/**/*", "/Cargo.toml", "/LICENSE-MIT", "/LICENSE-APACHE", "/README.md"]
+
+[badges]
+travis-ci = { repository = "frol/cgroups-fs" }
 
 [dependencies]
 nix = "0.12.0"

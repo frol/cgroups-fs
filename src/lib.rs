@@ -6,11 +6,11 @@
 //! ## Get memory usage from root cgroup
 //!
 //! ```
-//! let cgroup_name = cgroups_fs::CgroupName::new("");
-//! let memory_cgroup = cgroups_fs::Cgroup::new(&cgroup_name, "memory");
+//! let root_cgroup = cgroups_fs::CgroupName::new("");
+//! let root_memory_cgroup = cgroups_fs::Cgroup::new(&root_cgroup, "memory");
 //! println!(
 //!     "Current memory usage is {} bytes",
-//!     memory_cgroup.get_value::<u64>("memory.usage_in_bytes").unwrap()
+//!     root_memory_cgroup.get_value::<u64>("memory.usage_in_bytes").unwrap()
 //! );
 //! ```
 //!
@@ -19,6 +19,8 @@
 //! Read [the `CgroupsCommandExt` documentation].
 //!
 //! [the `CgroupsCommandExt` documentation]: trait.CgroupsCommandExt.html#impl-CgroupsCommandExt
+#![cfg(target_os = "linux")]
+
 use std::fs;
 use std::io;
 use std::os::unix::process::CommandExt;
@@ -239,19 +241,19 @@ pub trait CgroupsCommandExt {
 /// # Example
 ///
 /// ```no_run
-/// let cgroup_name = cgroups_fs::CgroupName::new("my-cgroup");
-/// let memory_cgroup = cgroups_fs::AutomanagedCgroup::init(&cgroup_name, "memory").unwrap();
+/// let my_cgroup = cgroups_fs::CgroupName::new("my-cgroup");
+/// let my_memory_cgroup = cgroups_fs::AutomanagedCgroup::init(&my_cgroup, "memory").unwrap();
 ///
 /// use cgroups_fs::CgroupsCommandExt;
 /// let output = std::process::Command::new("echo")
 ///     .arg("Hello world")
-///     .cgroups(&[&memory_cgroup])
+///     .cgroups(&[&my_memory_cgroup])
 ///     .output()
 ///     .expect("Failed to execute command");
 ///
 /// println!(
 ///     "The echo process used {} bytes of RAM.",
-///     memory_cgroup.get_value::<u64>("memory.max_usage_in_bytes").unwrap()
+///     my_memory_cgroup.get_value::<u64>("memory.max_usage_in_bytes").unwrap()
 /// );
 /// ```
 impl CgroupsCommandExt for std::process::Command {
