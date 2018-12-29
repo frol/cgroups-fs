@@ -31,14 +31,14 @@ use cgroups_fs;
 use cgroups_fs;
 
 let my_cgroup = cgroups_fs::CgroupName("my-cgroup");
-let my_cpu_cgroup = cgroups_fs::AutomanagedCgroup::init(&my_cgroup, "cpu")?;
+let my_cpu_cgroup = cgroups_fs::Cgroup::init(&my_cgroup, "cpu")?;
 println!(
-    "The current CPU shares is {}",
+    "The current CPU shares in `my-cgroup` control group is {}",
     my_cpu_cgroup.get_value::<u64>("cpu.shares")
 );
 ```
 
-Please, find more examples in [the documentation](https://docs.rs/cgroups-fs/*/cgroups-fs/#examples).
+Please, find more examples in [the documentation](https://docs.rs/cgroups-fs#examples).
 
 ## License
 
