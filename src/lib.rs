@@ -20,6 +20,8 @@
 //!
 //! [the `CgroupsCommandExt` documentation]: trait.CgroupsCommandExt.html#impl-CgroupsCommandExt
 #![cfg(target_os = "linux")]
+#![deny(missing_docs)]
+#![deny(unsafe_code)]
 
 use std::fs;
 use std::io;
@@ -232,31 +234,33 @@ impl Drop for AutomanagedCgroup {
     }
 }
 
+/// This trait is designed to extend `std::process::Command` type with helpers for Cgroups.
 pub trait CgroupsCommandExt {
+    /// Specifies the Cgroups the executed process will be put into on start.
     fn cgroups(&mut self, cgroups: &[impl AsRef<Cgroup>]) -> &mut Self;
 }
 
-/// `std::process::Command` extension which adds `cgroups` helper method.
-///
-/// # Example
-///
-/// ```no_run
-/// let my_cgroup = cgroups_fs::CgroupName::new("my-cgroup");
-/// let my_memory_cgroup = cgroups_fs::AutomanagedCgroup::init(&my_cgroup, "memory").unwrap();
-///
-/// use cgroups_fs::CgroupsCommandExt;
-/// let output = std::process::Command::new("echo")
-///     .arg("Hello world")
-///     .cgroups(&[&my_memory_cgroup])
-///     .output()
-///     .expect("Failed to execute command");
-///
-/// println!(
-///     "The echo process used {} bytes of RAM.",
-///     my_memory_cgroup.get_value::<u64>("memory.max_usage_in_bytes").unwrap()
-/// );
-/// ```
 impl CgroupsCommandExt for std::process::Command {
+    /// Specifies the Cgroups the executed process will be put into on start.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// let my_cgroup = cgroups_fs::CgroupName::new("my-cgroup");
+    /// let my_memory_cgroup = cgroups_fs::AutomanagedCgroup::init(&my_cgroup, "memory").unwrap();
+    ///
+    /// use cgroups_fs::CgroupsCommandExt;
+    /// let output = std::process::Command::new("echo")
+    ///     .arg("Hello world")
+    ///     .cgroups(&[&my_memory_cgroup])
+    ///     .output()
+    ///     .expect("Failed to execute command");
+    ///
+    /// println!(
+    ///     "The echo process used {} bytes of RAM.",
+    ///     my_memory_cgroup.get_value::<u64>("memory.max_usage_in_bytes").unwrap()
+    /// );
+    /// ```
     fn cgroups(&mut self, cgroups: &[impl AsRef<Cgroup>]) -> &mut Self {
         let tasks_paths = cgroups
             .iter()
