@@ -28,6 +28,8 @@ use std::io;
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 
+use nix;
+
 /// A common structure holding a cgroups name (path).
 #[derive(Debug)]
 pub struct CgroupName {
@@ -152,15 +154,26 @@ impl Cgroup {
             .collect())
     }
 
+    /// Sends a specified Unix Signal to all the tasks in the Cgroup.
+    pub fn send_signal_to_all_tasks(&self, signal: nix::sys::signal::Signal) -> io::Result<usize> {
+        let tasks = self.get_tasks()?;
+        let tasks_count = tasks.len();
+        for task in tasks {
+            nix::sys::signal::kill(task, signal).ok();
+        }
+        Ok(tasks_count)
+    }
+
     /// Kills (SIGKILL) all the attached to the cgroup tasks.
+    ///
+    /// WARNING: The naive implementation turned out to be not reliable enough for the fork-bomb
+    /// use-case. To implement a reliable `kill_all` method, use `freezer` Cgroup. It is decided to
+    /// move such extensions into a separate crate (to be announced).
+    #[deprecated(since="1.0.1", note="please, implement a reliable kill-all using `freezer` cgroup")]
     pub fn kill_all_tasks(&self) -> io::Result<()> {
         for _ in 0..100 {
-            let tasks = self.get_tasks()?;
-            if tasks.is_empty() {
-                return Ok(());
-            }
-            for task in tasks {
-                nix::sys::signal::kill(task, nix::sys::signal::Signal::SIGKILL).is_ok();
+            if self.send_signal_to_all_tasks(nix::sys::signal::Signal::SIGKILL)? == 0 {
+                break;
             }
             std::thread::sleep(std::time::Duration::from_micros(1));
         }
@@ -182,6 +195,7 @@ impl Cgroup {
 /// [`Cgroup`]: struct.Cgroup.html
 /// [`init`]: struct.AutomanagedCgroup.html#method.init
 /// [`drop`]: struct.AutomanagedCgroup.html#impl-Drop
+#[derive(Debug)]
 pub struct AutomanagedCgroup {
     inner: Cgroup,
 }
