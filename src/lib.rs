@@ -169,7 +169,10 @@ impl Cgroup {
     /// WARNING: The naive implementation turned out to be not reliable enough for the fork-bomb
     /// use-case. To implement a reliable `kill_all` method, use `freezer` Cgroup. It is decided to
     /// move such extensions into a separate crate (to be announced).
-    #[deprecated(since="1.0.1", note="please, implement a reliable kill-all using `freezer` cgroup")]
+    #[deprecated(
+        since = "1.0.1",
+        note = "please, use `freezer` cgroup to implement `kill_all_tasks` reliably (https://gitlab.com/dots.org.ua/ddots-runner/blob/d967ee3ba9de364dfb5a2e1a4f468586efb504f8/src/extensions/process.rs#L132-166)"
+    )]
     pub fn kill_all_tasks(&self) -> io::Result<()> {
         for _ in 0..100 {
             if self.send_signal_to_all_tasks(nix::sys::signal::Signal::SIGKILL)? == 0 {
