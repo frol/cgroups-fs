@@ -93,7 +93,15 @@ impl Cgroup {
     /// Notes:
     /// * Keep in mind the usual filesystem permissions (owner, group, and mode bits).
     pub fn create(&self) -> io::Result<()> {
-        fs::create_dir(&self.root)
+        fs::create_dir(&self.root).map_err(|error| {
+            io::Error::new(
+                error.kind(),
+                format!(
+                    "Cgroup cannot be created due to: {} (tried creating {:?} directory)",
+                    error, self.root
+                ),
+            )
+        })
     }
 
     /// Removes a cgroups namespace.
@@ -102,7 +110,15 @@ impl Cgroup {
     /// * This method will fail if there are nested cgroups.
     /// * Keep in mind the usual filesystem permissions (owner, group, and mode bits).
     pub fn remove(&self) -> io::Result<()> {
-        fs::remove_dir(&self.root)
+        fs::remove_dir(&self.root).map_err(|error| {
+            io::Error::new(
+                error.kind(),
+                format!(
+                    "Cgroup cannot be removed due to: {} (tried removing {:?} directory)",
+                    error, self.root
+                ),
+            )
+        })
     }
 
     /// Sets a binary or string value to the cgroup control file.
@@ -110,7 +126,16 @@ impl Cgroup {
     where
         V: AsRef<[u8]>,
     {
-        fs::write(self.root.join(key), value)
+        let key = self.root.join(key);
+        fs::write(&key, value).map_err(|error| {
+            io::Error::new(
+                error.kind(),
+                format!(
+                    "Cgroup value under key {:?} cannot be set due to: {}",
+                    key, error
+                ),
+            )
+        })
     }
 
     /// Sets a value to the cgroup control file.
@@ -123,7 +148,16 @@ impl Cgroup {
 
     /// Gets a string value from cgroup control file.
     pub fn get_raw_value(&self, key: &str) -> io::Result<String> {
-        fs::read_to_string(self.root.join(key))
+        let key = self.root.join(key);
+        fs::read_to_string(&key).map_err(|error| {
+            io::Error::new(
+                error.kind(),
+                format!(
+                    "Cgroup value under key {:?} cannot be read due to: {}",
+                    key, error
+                ),
+            )
+        })
     }
 
     /// Gets a value from cgroup control file.
@@ -143,12 +177,29 @@ impl Cgroup {
 
     /// Attaches a task (thread) to the cgroup.
     pub fn add_task(&self, pid: nix::unistd::Pid) -> io::Result<()> {
-        fs::write(self.tasks_absolute_path(), pid.to_string())
+        fs::write(self.tasks_absolute_path(), pid.to_string()).map_err(|error| {
+            io::Error::new(
+                error.kind(),
+                format!(
+                    "A task cannot be added to cgroup {:?} due to: {}",
+                    self.root, error
+                ),
+            )
+        })
     }
 
     /// Lists tasks (threads) attached to the cgroup.
     pub fn get_tasks(&self) -> io::Result<Vec<nix::unistd::Pid>> {
-        Ok(fs::read_to_string(self.tasks_absolute_path())?
+        Ok(fs::read_to_string(self.tasks_absolute_path())
+            .map_err(|error| {
+                io::Error::new(
+                    error.kind(),
+                    format!(
+                        "Tasks cannot be read from cgroup {:?} due to: {}",
+                        self.root, error
+                    ),
+                )
+            })?
             .split_whitespace()
             .map(|pid| nix::unistd::Pid::from_raw(pid.parse().unwrap()))
             .collect())
