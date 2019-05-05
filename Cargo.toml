@@ -1,6 +1,6 @@
 [package]
 name = "cgroups-fs"
-version = "1.0.3"
+version = "1.0.4-alpha.0"
 authors = ["Vlad Frolov <frolvlad@gmail.com>"]
 edition = "2018"
 license = "MIT/Apache-2.0"
