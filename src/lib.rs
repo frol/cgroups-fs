@@ -21,7 +21,6 @@
 //! [the `CgroupsCommandExt` documentation]: trait.CgroupsCommandExt.html#impl-CgroupsCommandExt
 #![cfg(target_os = "linux")]
 #![deny(missing_docs)]
-#![deny(unsafe_code)]
 
 use std::fs;
 use std::io;
@@ -275,7 +274,7 @@ impl AutomanagedCgroup {
                     }
                 }
             }
-            inner.remove().is_ok();
+            inner.remove().ok();
             inner.create()?;
         }
         Ok(Self { inner })
@@ -334,12 +333,14 @@ impl CgroupsCommandExt for std::process::Command {
             .iter()
             .map(|cgroup| cgroup.as_ref().tasks_absolute_path())
             .collect::<Vec<PathBuf>>();
-        self.before_exec(move || {
-            let pid = std::process::id().to_string();
-            for tasks_path in &tasks_paths {
-                fs::write(tasks_path, &pid)?;
-            }
-            Ok(())
-        })
+        unsafe {
+            self.pre_exec(move || {
+                let pid = std::process::id().to_string();
+                for tasks_path in &tasks_paths {
+                    fs::write(tasks_path, &pid)?;
+                }
+                Ok(())
+            })
+        }
     }
 }
