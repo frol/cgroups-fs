@@ -16,4 +16,4 @@ include = ["/src/**/*", "/Cargo.toml", "/LICENSE-MIT", "/LICENSE-APACHE", "/READ
 travis-ci = { repository = "frol/cgroups-fs" }
 
 [dependencies]
-nix = ">0.12.0,<0.16"
+nix = ">0.12.0,<0.18"
